@@ -56,7 +56,7 @@ if [[ "${WRT_TARGET^^}" == *"QUALCOMMAX"* ]]; then
 	if [[ "${WRT_CONFIG,,}" == *"ipq50"* ]]; then
 		echo "CONFIG_NSS_FIRMWARE_VERSION_12_2=y" >> ./.config
 	else
-		echo "CONFIG_NSS_FIRMWARE_VERSION_12_5=y" >> ./.config
+		echo "CONFIG_NSS_FIRMWARE_VERSION_11_4=y" >> ./.config
 	fi
 	#无WIFI配置调整Q6大小
 	if [[ "${WRT_CONFIG,,}" == *"wifi"* && "${WRT_CONFIG,,}" == *"no"* ]]; then
