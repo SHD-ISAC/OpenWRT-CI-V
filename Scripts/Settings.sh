@@ -43,24 +43,31 @@ if [ -n "$WRT_PACKAGE" ]; then
 fi
 
 #高通平台调整
-DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom/"
-if [[ "${WRT_TARGET^^}" == *"QUALCOMMAX"* ]]; then
+DTS_PATH="./target/linux/qualcommax/files/arch/arm64/boot/dts/qcom"
+if [[ $WRT_TARGET == *"QUALCOMMAX"* ]]; then
 	#取消nss相关feed
 	echo "CONFIG_FEED_nss_packages=n" >> ./.config
 	echo "CONFIG_FEED_sqm_scripts_nss=n" >> ./.config
-	#开启sqm-nss插件
-	echo "CONFIG_PACKAGE_luci-app-sqm=y" >> ./.config
-	echo "CONFIG_PACKAGE_sqm-scripts-nss=y" >> ./.config
 	#设置NSS版本
 	echo "CONFIG_NSS_FIRMWARE_VERSION_11_4=n" >> ./.config
-	if [[ "${WRT_CONFIG,,}" == *"ipq50"* ]]; then
-		echo "CONFIG_NSS_FIRMWARE_VERSION_12_2=y" >> ./.config
-	else
-		echo "CONFIG_NSS_FIRMWARE_VERSION_12_5=y" >> ./.config
-	fi
+	echo "CONFIG_NSS_FIRMWARE_VERSION_12_5=y" >> ./.config
 	#无WIFI配置调整Q6大小
 	if [[ "${WRT_CONFIG,,}" == *"wifi"* && "${WRT_CONFIG,,}" == *"no"* ]]; then
 		find $DTS_PATH -type f ! -iname '*nowifi*' -exec sed -i 's/ipq\(6018\|8074\).dtsi/ipq\1-nowifi.dtsi/g' {} +
 		echo "qualcommax set up nowifi successfully!"
+	fi
+
+	# 修改 DTS 文件中 nand-ecc-strength 从 <4> 到 <8>（假设已经完成）
+	DTS_FILE="$DTS_PATH/ipq8071-ap8220.dts"
+	if [ -f "$DTS_FILE" ]; then
+		sed -i "s/nand-ecc-strength = <4>/nand-ecc-strength = <8>/g" "$DTS_FILE"
+		echo "Updated nand-ecc-strength from <4> to <8> in $DTS_FILE"
+
+	# 在 nand-bus-width = <8>; 下追加三行
+		sed -i '/nand-bus-width = <8>;/a\
+			nand-page-size = <4096>;\
+			nand-oob-size  = <160>;\
+			nand-erase-size = <262144>;' "$DTS_FILE"
+		echo "Appended nand-page-size, nand-oob-size and nand-erase-size settings to $DTS_FILE"
 	fi
 fi
